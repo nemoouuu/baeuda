@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kuis Fisika — BAEUDA</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <div class="brand">
+        <img src="logo.png" alt="Logo BAEUDA" class="logo" />
+        <h1>BAEUDA</h1>
+      </div>
+      <nav class="navlinks">
+        <a href="index.html" class="btn ghost">Beranda</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="max-width:700px;margin:40px auto;">
+    <div class="card" style="padding:2em;">
+      <div class="badge">Kuis Fisika</div>
+      <h3 style="margin-bottom:1.5em;">⚡ Kuis Fisika & Sains — 20 Pertanyaan (SMP)</h3>
+      <div id="quiz-area">
+        <div id="quiz-question" style="font-size:1.2em;font-weight:500;margin-bottom:1em;"></div>
+        <div id="quiz-options"></div>
+        <div id="quiz-feedback" style="margin-top:1em;color:var(--muted);min-height:2em;"></div>
+        <button class="btn brand" id="quiz-next" style="display:none;margin-top:1.5em;">Pertanyaan Berikutnya</button>
+        <div id="quiz-score" style="margin-top:1.5em;font-weight:bold;"></div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">© <span id="y"></span> BAEUDA</div>
+  </footer>
+  <script>
+    const STORAGE_KEY = 'baeudaProfile';
+
+    function loadProfile() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    }
+
+    function saveProfile(profile) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    }
+
+    function addQuizXP(amount) {
+      const defaultStats = [
+        { label: 'Permainan dimainkan', value: 0 },
+        { label: 'Tantangan selesai', value: 0 },
+        { label: 'XP didapat', value: 0 }
+      ];
+      const profile = loadProfile() || { xp: 0, level: 1, stats: defaultStats };
+      profile.xp = Number(profile.xp || 0) + amount;
+      profile.stats = Array.isArray(profile.stats) ? profile.stats : defaultStats;
+      if (!profile.stats[0]) profile.stats[0] = defaultStats[0];
+      if (!profile.stats[1]) profile.stats[1] = defaultStats[1];
+      if (!profile.stats[2]) profile.stats[2] = defaultStats[2];
+      profile.stats[0].value = Number(profile.stats[0].value || 0) + 1;
+      profile.stats[2].value = Number(profile.stats[2].value || 0) + amount;
+      profile.level = Math.max(1, Math.ceil(profile.xp / 100));
+      saveProfile(profile);
+    }
+
+    const quizQuestions = [
+      {q:"Matahari adalah sebuah bintang.",options:["Benar","Salah"],answer:0,explain:"Matahari adalah bintang karena menghasilkan energi sendiri melalui reaksi fusi nuklir.", type:"mc"},
+      {q:"Planet apa yang dikenal sebagai Planet Merah?",options:["Bumi","Mars","Venus","Jupiter"],answer:1,explain:"Mars tampak merah karena oksida besi (karat) di permukaannya.", type:"mc"},
+      {q:"Air mendidih pada 100°C di permukaan laut.",options:["Benar","Salah"],answer:0,explain:"Pada tekanan udara normal di permukaan laut, air mendidih pada 100°C.", type:"mc"},
+      {q:"Manakah yang BUKAN wujud materi?",options:["Padat","Cair","Gas","Panas"],answer:3,explain:"Panas adalah bentuk energi, bukan wujud materi.", type:"mc"},
+      {q:"Suara merambat lebih cepat di udara daripada di air.",options:["Benar","Salah"],answer:1,explain:"Suara merambat lebih cepat di air karena partikelnya lebih rapat.", type:"mc"},
+      {q:"Gaya apa yang menarik benda ke pusat Bumi?",options:["Magnetisme","Gravitasi","Gesekan","Listrik"],answer:1,explain:"Gravitasi adalah gaya yang menarik benda menuju pusat Bumi.", type:"mc"},
+      {q:"Simbol kimia air adalah H2O.",options:["Benar","Salah"],answer:0,explain:"Setiap molekul air terdiri dari dua atom hidrogen dan satu atom oksigen.", type:"mc"},
+      {q:"Bagian atom mana yang bermuatan positif?",options:["Elektron","Proton","Neutron","Foton"],answer:1,explain:"Proton membawa muatan listrik positif.", type:"mc"},
+      {q:"Tumbuhan membuat makanannya sendiri melalui fotosintesis.",options:["Benar","Salah"],answer:0,explain:"Fotosintesis memungkinkan tumbuhan mengubah cahaya menjadi energi kimia.", type:"mc"},
+      {q:"Berapakah titik beku air dalam Celcius?",options:["0°C","32°C","100°C","-10°C"],answer:0,explain:"Air membeku pada 0°C dalam kondisi standar.", type:"mc"},
+      {q:"Bumi mengelilingi Matahari sekali setiap 24 jam.",options:["Benar","Salah"],answer:1,explain:"Bumi berputar pada porosnya setiap 24 jam; mengelilingi Matahari membutuhkan satu tahun.", type:"mc"},
+      {q:"Gas apa yang dibutuhkan manusia untuk bernapas?",options:["Karbon dioksida","Oksigen","Nitrogen","Helium"],answer:1,explain:"Oksigen sangat penting untuk proses respirasi manusia.", type:"mc"},
+      {q:"Magnetisme dapat menarik beberapa logam seperti besi.",options:["Benar","Salah"],answer:0,explain:"Besi, nikel, dan kobalt dapat ditarik oleh magnet.", type:"mc"},
+      {q:"Fenomena alam apa yang menyebabkan kilat?",options:["Listrik statis","Angin","Hujan","Gempa"],answer:0,explain:"Kilat terjadi karena pelepasan listrik statis di awan.", type:"mc"},
+      {q:"Gaya yang menahan gerak antara dua permukaan disebut...",options:["Gravitasi","Gesekan","Inersia","Momentum"],answer:1,explain:"Gesekan menghambat gerak relatif antara dua permukaan.", type:"mc"},
+      {q:"Titik didih air menurun saat ketinggian meningkat.",options:["Benar","Salah"],answer:0,explain:"Tekanan udara lebih rendah di ketinggian tinggi sehingga titik didih air lebih rendah.", type:"mc"},
+      {q:"Planet mana yang paling dekat dengan Matahari?",options:["Merkurius","Venus","Bumi","Mars"],answer:0,explain:"Merkurius adalah planet terdekat dengan Matahari.", type:"mc"},
+      {q:"Arus listrik diukur dalam ampere.",options:["Benar","Salah"],answer:0,explain:"Satuan arus listrik adalah ampere (ampere).", type:"mc"},
+      {q:"Kecepatan didefinisikan sebagai jarak dibagi waktu.",options:["Benar","Salah"],answer:0,explain:"Kecepatan = jarak / waktu.", type:"mc"},
+      {q:"Planet mana yang memiliki paling banyak bulan?",options:["Merkurius","Bumi","Mars","Saturnus"],answer:3,explain:"Saturnus memiliki jumlah bulan yang paling banyak yang diketahui.", type:"mc"},
+      {q:"Cahaya merambat lebih cepat daripada suara.",options:["Benar","Salah"],answer:0,explain:"Cahaya bergerak jauh lebih cepat daripada suara.", type:"mc"},
+      {q:"Magnet memiliki dua kutub bernama utara dan selatan.",options:["Benar","Salah"],answer:0,explain:"Magnet selalu memiliki kutub utara dan selatan.", type:"mc"},
+      {q:"Bulan adalah sebuah planet.",options:["Benar","Salah"],answer:1,explain:"Bulan adalah satelit alami, bukan planet.", type:"mc"},
+      {q:"Jelaskan bagaimana fotosintesis bekerja pada tumbuhan.", answer:"Tumbuhan menggunakan sinar matahari, air, dan karbon dioksida untuk menghasilkan glukosa dan oksigen.", explain:"Fotosintesis mengubah energi cahaya menjadi energi kimia yang tersimpan dalam glukosa.", type:"essay"}
+    ];
+    let quizIndex = 0;
+    let quizScore = 0;
+
+    function showQuizQuestion() {
+      const q = quizQuestions[quizIndex];
+      document.getElementById('quiz-question').innerHTML = `<b>Pertanyaan ${quizIndex+1}:</b> ${q.q}`;
+      if(q.type === "essay"){
+        document.getElementById('quiz-options').innerHTML = `<textarea id="essay-answer" class="input" rows="4" placeholder="Tulis jawabanmu di sini..."></textarea><br><button class="btn brand" onclick="checkQuizEssay()">Kirim Jawaban</button>`;
+      } else {
+        const opts = q.options.map((opt, i) =>
+          `<button class="btn full" style="margin:.3em 0;width:100%;text-align:left;" onclick="checkQuizAnswer(${i})">${opt}</button>`
+        ).join("");
+        document.getElementById('quiz-options').innerHTML = opts;
+      }
+      document.getElementById('quiz-feedback').textContent = '';
+      document.getElementById('quiz-next').style.display = 'none';
+      document.getElementById('quiz-score').textContent = `Pertanyaan ${quizIndex+1} dari ${quizQuestions.length}`;
+    }
+
+    window.checkQuizAnswer = function(selected) {
+      const q = quizQuestions[quizIndex];
+      if (selected === q.answer) {
+        document.getElementById('quiz-feedback').innerHTML = "<span style='color:var(--ok)'>Benar! 🎉</span>";
+        quizScore++;
+      } else {
+        document.getElementById('quiz-feedback').innerHTML =
+          `<span style='color:var(--danger)'>Salah!</span> <br>Jawaban benar: <b>${q.options[q.answer]}</b><br><i>${q.explain}</i>`;
+      }
+      document.getElementById('quiz-options').innerHTML = '';
+      document.getElementById('quiz-next').style.display = 'inline-block';
+      document.getElementById('quiz-score').textContent = `Skor: ${quizScore} / ${quizQuestions.length}`;
+    };
+
+    window.checkQuizEssay = function(){
+      const q = quizQuestions[quizIndex];
+      const userAnswer = document.getElementById('essay-answer').value.trim().toLowerCase();
+      const correctAnswer = q.answer.toLowerCase();
+      if(userAnswer.includes(correctAnswer.split(' ')[0]) || correctAnswer.includes(userAnswer.split(' ')[0])){ 
+        document.getElementById('quiz-feedback').innerHTML = `<span style='color:var(--ok)'>Benar! 🎉</span><br><i>${q.explain}</i>`;
+        quizScore++;
+      } else {
+        document.getElementById('quiz-feedback').innerHTML = `<span style='color:var(--danger)'>Salah</span><br>Jawaban benar: <b>${q.answer}</b><br><i>${q.explain}</i>`;
+      }
+      document.getElementById('quiz-options').innerHTML = '';
+      document.getElementById('quiz-next').style.display = 'inline-block';
+      document.getElementById('quiz-score').textContent = `Skor: ${quizScore} / ${quizQuestions.length}`;
+    };
+
+    document.getElementById('quiz-next').onclick = function() {
+      quizIndex++;
+      if (quizIndex < quizQuestions.length) {
+        showQuizQuestion();
+      } else {
+        // Update XP
+          addQuizXP(quizScore * 10);
+        document.getElementById('quiz-area').innerHTML =
+          `<h4>Kuis selesai!</h4>
+          <p>Skor akhir kamu: <b>${quizScore} / ${quizQuestions.length}</b></p>
+          <p>Kamu mendapat ${quizScore * 10} XP!</p>
+          <a href="index.html" class="btn brand" style="margin-top:1em;">Kembali ke Beranda</a>`;
+      }
+    };
+
+    showQuizQuestion();
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

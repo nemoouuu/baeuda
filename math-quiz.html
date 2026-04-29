@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kuis Matematika — BAEUDA</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container" style="max-width:700px;margin:40px auto;">
+    <div class="card" style="padding:2em;">
+      <div class="badge">Kuis Matematika</div>
+      <h3 style="margin-bottom:1em;">10 Pertanyaan Cepat</h3>
+      <div id="quiz-area">
+        <div id="quiz-question" style="font-size:1.1rem;margin-bottom:.8em;"></div>
+        <div id="quiz-options"></div>
+        <div id="quiz-feedback" style="margin-top:1em;min-height:2em;"></div>
+        <button class="btn brand" id="quiz-next" style="display:none;margin-top:1em;">Pertanyaan Berikutnya</button>
+        <div id="quiz-score" style="margin-top:1em;font-weight:600;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'baeudaProfile';
+
+    function loadProfile() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    }
+
+    function saveProfile(profile) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    }
+
+    function addQuizXP(amount) {
+      const defaultStats = [
+        { label: 'Permainan dimainkan', value: 0 },
+        { label: 'Tantangan selesai', value: 0 },
+        { label: 'XP didapat', value: 0 }
+      ];
+      const profile = loadProfile() || { xp: 0, level: 1, stats: defaultStats };
+      profile.xp = Number(profile.xp || 0) + amount;
+      profile.stats = Array.isArray(profile.stats) ? profile.stats : defaultStats;
+      if (!profile.stats[0]) profile.stats[0] = defaultStats[0];
+      if (!profile.stats[1]) profile.stats[1] = defaultStats[1];
+      if (!profile.stats[2]) profile.stats[2] = defaultStats[2];
+      profile.stats[0].value = Number(profile.stats[0].value || 0) + 1;
+      profile.stats[2].value = Number(profile.stats[2].value || 0) + amount;
+      profile.level = Math.max(1, Math.ceil(profile.xp / 100));
+      saveProfile(profile);
+    }
+
+    const quizQuestions = [
+      {q:"5 + 7 = ?", options:["10","11","12","13"], answer:2, explain:"5 + 7 = 12.", type:"mc"},
+      {q:"12 - 4 = ?", options:["6","8","7","9"], answer:1, explain:"12 - 4 = 8.", type:"mc"},
+      {q:"6 × 7 = ?", options:["42","36","48","40"], answer:0, explain:"6 × 7 = 42.", type:"mc"},
+      {q:"24 ÷ 6 = ?", options:["4","5","6","3"], answer:0, explain:"24 ÷ 6 = 4.", type:"mc"},
+      {q:"Berapakah akar kuadrat <span style=\"font-size:1.1rem;\">&radic;81</span>?", options:["7","8","9","10"], answer:2, explain:"&radic;81 = 9.", type:"mc"},
+      {q:"Jika x=3, maka 2x+5 = ?", options:["11","10","9","8"], answer:0, explain:"2×3+5 = 11.", type:"mc"},
+      {q:"80% dari 50 adalah?", options:["35","40","45","30"], answer:1, explain:"80%×50 = 40.", type:"mc"},
+      {q:"Jarak 9 km ditempuh dalam 3 jam, kecepatan rata-rata = ?", options:["2 km/j","3 km/j","4 km/j","5 km/j"], answer:1, explain:"9/3 = 3 km/j.", type:"mc"},
+      {q:"Pangkat 2 dari 5 adalah...", options:["10","20","25","15"], answer:2, explain:"5² = 25.", type:"mc"},
+      {q:"15 + 26 = ?", options:["31","41","39","42"], answer:1, explain:"15 + 26 = 41.", type:"mc"},
+      {q:"9 × 8 = ?", options:["64","72","81","68"], answer:1, explain:"9 × 8 = 72.", type:"mc"},
+      {q:"18 ÷ 3 = ?", options:["6","9","5","7"], answer:0, explain:"18 ÷ 3 = 6.", type:"mc"},
+      {q:"14 + 19 = ?", options:["33","34","32","31"], answer:0, explain:"14 + 19 = 33.", type:"mc"},
+      {q:"100 - 37 = ?", options:["63","73","67","57"], answer:0, explain:"100 - 37 = 63.", type:"mc"},
+      {q:"7² = ?", options:["42","49","56","36"], answer:1, explain:"7² = 49.", type:"mc"},
+      {q:"45% dari 200 adalah?", options:["70","80","90","100"], answer:2, explain:"0.45 × 200 = 90.", type:"mc"},
+      {q:"Jika 3x - 4 = 11, maka x = ?", options:["3","4","5","6"], answer:2, explain:"3x = 15, x = 5.", type:"mc"},
+      {q:"0.5 + 0.75 = ?", options:["1.15","1.25","1.05","1.00"], answer:1, explain:"0.5 + 0.75 = 1.25.", type:"mc"},
+      {q:"25 ÷ 5 = ?", options:["4","5","6","7"], answer:1, explain:"25 ÷ 5 = 5.", type:"mc"},
+      {q:"14 + 6 × 2 = ?", options:["32","40","26","28"], answer:0, explain:"6 × 2 = 12, 14 + 12 = 26.", type:"mc"},
+      {q:"¾ dari 32 = ?", options:["24","16","28","20"], answer:0, explain:"0.75 × 32 = 24.", type:"mc"},
+      {q:"10² = ?", options:["100","20","10","1000"], answer:0, explain:"10² = 100.", type:"mc"},
+      {q:"18% dari 50 = ?", options:["9","8","10","11"], answer:0, explain:"0.18 × 50 = 9.", type:"mc"},
+      {q:"Keliling persegi panjang 5 x 3 = ?", options:["15","16","18","20"], answer:1, explain:"Keliling = 2 × (5 + 3) = 16.", type:"mc"},
+      {q:"Berapakah 11 + 11?", options:["20","21","22","23"], answer:2, explain:"11 + 11 = 22.", type:"mc"},
+      {q:"Jika x=4, berapakah 2x + 6?", options:["12","14","10","16"], answer:0, explain:"2×4 + 6 = 14.", type:"mc"},
+      {q:"Segitiga memiliki sudut 60°, 60°, dan 60°. Jenis segitiga apa itu?", options:["Siku-siku","Tumpul","Sama sisi","Sama kaki"], answer:2, explain:"Semua sisi sama dan semua sudut 60° membuatnya segitiga sama sisi.", type:"mc"},
+      {q:"Berapakah 5 × 6?", options:["25","30","35","40"], answer:1, explain:"5 × 6 = 30.", type:"mc"},
+      {q:"Selesaikan persamaan: 2x + 3 = 7. Tunjukkan langkahmu.", answer:"x=2", explain:"Kurangi 3: 2x=4, bagi 2: x=2.", type:"essay"}
+    ];
+    let idx=0, score=0;
+    function showQ(){
+      const q=quizQuestions[idx];
+      document.getElementById('quiz-question').innerHTML = `<b>Pertanyaan ${idx+1}:</b> ${q.q}`;
+      if(q.type === "essay"){
+        document.getElementById('quiz-options').innerHTML = `<textarea id="essay-answer" class="input" rows="4" placeholder="Tulis jawabanmu di sini..."></textarea><br><button class="btn brand" onclick="answerEssay()">Kirim Jawaban</button>`;
+      } else {
+        document.getElementById('quiz-options').innerHTML = q.options.map((o,i)=>
+          `<button class="btn full" style="margin:.4em 0;text-align:left;" onclick="answer(${i})">${o}</button>`
+        ).join('');
+      }
+      document.getElementById('quiz-feedback').textContent='';
+      document.getElementById('quiz-next').style.display='none';
+      document.getElementById('quiz-score').textContent = `Pertanyaan ${idx+1} / ${quizQuestions.length}`;
+    }
+    window.answer = function(selected){
+      const q=quizQuestions[idx];
+      if(selected===q.answer){ score++; document.getElementById('quiz-feedback').innerHTML = `<span style="color:var(--ok)">Benar! 🎉</span>`; }
+      else { document.getElementById('quiz-feedback').innerHTML = `<span style="color:var(--danger)">Salah</span><br>Jawaban: <b>${q.options[q.answer]}</b><br><small>${q.explain}</small>`; }
+      document.getElementById('quiz-options').innerHTML='';
+      document.getElementById('quiz-next').style.display='inline-block';
+      document.getElementById('quiz-score').textContent = `Skor: ${score} / ${quizQuestions.length}`;
+    };
+    window.answerEssay = function(){
+      const q=quizQuestions[idx];
+      const userAnswer = document.getElementById('essay-answer').value.trim().toLowerCase().replace(/\s+/g, '');
+      const correctAnswer = q.answer.toLowerCase().replace(/\s+/g, '');
+      if(userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer)){ score++; document.getElementById('quiz-feedback').innerHTML = `<span style="color:var(--ok)">Benar! 🎉</span><br><small>${q.explain}</small>`; }
+      else { document.getElementById('quiz-feedback').innerHTML = `<span style="color:var(--danger)">Salah</span><br>Jawaban benar: <b>${q.answer}</b><br><small>${q.explain}</small>`; }
+      document.getElementById('quiz-options').innerHTML='';
+      document.getElementById('quiz-next').style.display='inline-block';
+      document.getElementById('quiz-score').textContent = `Skor: ${score} / ${quizQuestions.length}`;
+    };
+    document.getElementById('quiz-next').onclick = function(){
+      idx++;
+      if(idx < quizQuestions.length) showQ();
+      else {
+        addQuizXP(score * 10);
+        document.getElementById('quiz-area').innerHTML = `<h4>Kuis selesai!</h4><p>Skor akhir: <b>${score} / ${quizQuestions.length}</b></p><p>Kamu mendapat ${score * 10} XP!</p><a class="btn" href="index.html">Kembali ke Beranda</a>`;
+      }
+    };
+    showQ();
+  </script>
+</body>
+</html>
